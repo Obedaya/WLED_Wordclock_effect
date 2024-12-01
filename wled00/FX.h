@@ -28,6 +28,7 @@
 #define WS2812FX_h
 
 #include <vector>
+#include <ctime>
 
 #include "const.h"
 
@@ -314,8 +315,9 @@
 #define FX_MODE_WAVESINS               184
 #define FX_MODE_ROCKTAVES              185
 #define FX_MODE_2DAKEMI                186
+#define FX_MODE_WORDCLOCK              187
 
-#define MODE_COUNT                     187
+#define MODE_COUNT                     188
 
 typedef enum mapping1D2D {
   M12_Pixels = 0,
@@ -680,7 +682,7 @@ class WS2812FX {  // 96 bytes
   static WS2812FX* instance;
 
   public:
-
+    static uint16_t mode_wordClock(void);
     WS2812FX() :
       paletteFade(0),
       paletteBlend(0),
@@ -898,6 +900,15 @@ class WS2812FX {  // 96 bytes
 
     std::vector<segment> _segments;
     friend class Segment;
+
+    // Wordclock helper functions
+    static const struct WordMapping
+    {
+        const char *word;
+        uint8_t start;
+        uint8_t end;
+    } WORDS_TO_LEDS[];
+
 
   private:
     uint16_t _length;

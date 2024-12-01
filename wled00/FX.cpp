@@ -73,7 +73,148 @@ int8_t tristate_square8(uint8_t x, uint8_t pulsewidth, uint8_t attdec) {
   return 0;
 }
 
+// Wordclock helper functions
+
+String getMinutesWord(int minute)
+{
+    if (minute < 5)
+        return "OCLOCK";
+    else if (minute < 10)
+        return "FIVE";
+    else if (minute < 15)
+        return "TEN";
+    else if (minute < 20)
+        return "FIFTEEN";
+    else if (minute < 25)
+        return "TWENTY";
+    else if (minute < 30)
+        return "TWENTYFIVE";
+    else if (minute < 35)
+        return "THIRTY";
+    else if (minute < 40)
+        return "TWENTYFIVE";
+    else if (minute < 45)
+        return "TWENTY";
+    else if (minute < 50)
+        return "FIFTEEN";
+    else if (minute < 55)
+        return "TEN";
+    else
+        return "FIVE";
+}
+
+WS2812FX::WordMapping const WS2812FX::WORDS_TO_LEDS[] = {
+    {"HOUR_1", 20, 22},
+    {"HOUR_2", 36, 38},
+    {"HOUR_3", 16, 20},
+    {"HOUR_4", 61, 64},
+    {"HOUR_5", 40, 43},
+    {"HOUR_6", 21, 23},
+    {"HOUR_7", 55, 59},
+    {"HOUR_8", 31, 35},
+    {"HOUR_9", 44, 47},
+    {"HOUR_10", 9, 11},
+    {"HOUR_11", 24, 29},
+    {"HOUR_12", 48, 53},
+    {"OCLOCK", 0, 5},
+    {"PAST", 68, 71},
+    {"TO", 67, 68},
+    {"MINUTES", 77, 83},
+    {"THIRTY", 90, 95},
+    {"TWENTY", 102, 107},
+    {"TWENTYFIVE", 98, 107},
+    {"FIVE", 98, 101},
+    {"TEN", 86, 88},
+    {"FIFTEEN", 111, 117},
+    {"IS", 127, 128},
+    {"IT", 130, 131}};
+
 // effect functions
+
+/*
+ * Wordclock
+ */
+uint16_t WS2812FX::mode_wordClock(void) {
+  // Get the current hour and minute
+  int minutes = minute(localTime);
+  int hours = hour(localTime);
+
+  // Convert to 12 hour time
+  if (hours > 12) {
+    hours -= 12;
+  }
+
+  // Convert to strings
+  String minuteWord = getMinutesWord(minutes);
+
+  // Past or to
+  String pastTo = "PAST";
+  if (minutes > 32) {
+    pastTo = "TO";
+    hours++;
+  } else {
+    pastTo = "PAST";
+  }
+
+  String hourWord = "HOUR_" + String(hours);
+
+  // Display time
+
+  // Clear all LEDs
+  for (int i = 0; i < SEGLEN; i++) {
+    strip.setPixelColor(i, 0);
+  }
+
+  // Display IT IS
+  for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
+    if (String("IS").equalsIgnoreCase(wordMapping.word) ||
+        String("IT").equalsIgnoreCase(wordMapping.word)) {
+      for (int i = wordMapping.start; i <= wordMapping.end; i++) {
+        strip.setPixelColor(i, SEGCOLOR(0));
+      }
+    }
+  }
+  // Display minutes
+  for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
+    if (minuteWord.equalsIgnoreCase(wordMapping.word)) {
+      for (int i = wordMapping.start; i <= wordMapping.end; i++) {
+        strip.setPixelColor(i, SEGCOLOR(1));
+      }
+    }
+  }
+  // Display "MINUTES"
+  for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
+    if (String("MINUTES").equalsIgnoreCase(wordMapping.word)) {
+      for (int i = wordMapping.start; i <= wordMapping.end; i++) {
+        strip.setPixelColor(i, SEGCOLOR(1));
+      }
+    }
+  }
+
+  // Display "PAST" or "TO"
+  for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
+    if (pastTo.equalsIgnoreCase(wordMapping.word)) {
+      for (int i = wordMapping.start; i <= wordMapping.end; i++) {
+        strip.setPixelColor(i, SEGCOLOR(0));
+      }
+    }
+  }
+
+  // Display hour
+  for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
+    if (hourWord.equalsIgnoreCase(wordMapping.word)) {
+      for (int i = wordMapping.start; i <= wordMapping.end; i++) {
+        strip.setPixelColor(i, SEGCOLOR(2));
+      }
+    }
+  }
+
+
+  strip.show();
+
+  return FRAMETIME;
+}
+static const char _data_FX_MODE_WORDCLOCK[] PROGMEM = "Wordclock";
 
 /*
  * No blinking. Just plain old static light.
@@ -7898,6 +8039,7 @@ void WS2812FX::setupEffectData() {
   addEffect(FX_MODE_2DWAVINGCELL, &mode_2Dwavingcell, _data_FX_MODE_2DWAVINGCELL);
 
   addEffect(FX_MODE_2DAKEMI, &mode_2DAkemi, _data_FX_MODE_2DAKEMI); // audio
+  addEffect(FX_MODE_WORDCLOCK, &mode_wordClock, _data_FX_MODE_WORDCLOCK);
 #endif // WLED_DISABLE_2D
 
 }
