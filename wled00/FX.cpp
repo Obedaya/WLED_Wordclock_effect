@@ -186,7 +186,9 @@ uint16_t WS2812FX::mode_wordClock(void) {
   for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
     if (String("MINUTES").equalsIgnoreCase(wordMapping.word)) {
       for (int i = wordMapping.start; i <= wordMapping.end; i++) {
-        strip.setPixelColor(i, SEGCOLOR(1));
+        if (minuteWord != "OCLOCK"){
+          strip.setPixelColor(i, SEGCOLOR(1));
+        }
       }
     }
   }
@@ -195,7 +197,9 @@ uint16_t WS2812FX::mode_wordClock(void) {
   for (const auto& wordMapping : WS2812FX::WORDS_TO_LEDS) {
     if (pastTo.equalsIgnoreCase(wordMapping.word)) {
       for (int i = wordMapping.start; i <= wordMapping.end; i++) {
-        strip.setPixelColor(i, SEGCOLOR(0));
+        if (minuteWord != "OCLOCK"){
+          strip.setPixelColor(i, SEGCOLOR(0));
+        }
       }
     }
   }
