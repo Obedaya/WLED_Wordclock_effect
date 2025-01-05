@@ -104,7 +104,7 @@ String getMinutesWord(int minute)
 }
 
 WS2812FX::WordMapping const WS2812FX::WORDS_TO_LEDS[] = {
-    {"HOUR_1", 20, 22},
+    {"HOUR_1", 13, 15},
     {"HOUR_2", 36, 38},
     {"HOUR_3", 16, 20},
     {"HOUR_4", 61, 64},
@@ -139,9 +139,16 @@ uint16_t WS2812FX::mode_wordClock(void) {
   int minutes = minute(localTime);
   int hours = hour(localTime);
 
+  // // Debug clock initializing minutes and hours 1s = 5m
+  // int minutes = (millis() / 1000 / 5) % 60;
+  // int hours = (millis() / 1000 / 60 / 60) % 12;
+
   // Convert to 12 hour time
   if (hours > 12) {
     hours -= 12;
+  } 
+  if (hours == 0) {
+    hours = 12;
   }
 
   // Convert to strings
